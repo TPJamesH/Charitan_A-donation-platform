@@ -1,0 +1,17 @@
+services:
+  api-gateway:
+    build:
+      context: .
+    container_name: api-gateway
+    ports:
+      - "${API_GATEWAY_PORT}:${API_GATEWAY_PORT}"
+    env_file:
+      - ./.env
+    environment:
+      KAFKA_BROKER: kafka:9092
+    networks:
+      - microservices
+
+networks:
+  microservices:
+    external: true

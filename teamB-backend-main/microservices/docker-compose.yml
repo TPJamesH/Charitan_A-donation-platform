@@ -1,0 +1,130 @@
+services:
+  # MongoDB Service
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - microservices
+
+  # Address Service
+  address-service:
+    build: ./address-service
+    container_name: address-service
+    ports:
+      - "${ADDRESS_PORT}:${ADDRESS_PORT}"
+    env_file:
+      - ./.env
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      MONGO_URI: ${MONGO_URI_AUTH}
+    depends_on:
+      - mongo
+    networks:
+      - microservices
+
+  # Authentication Service
+  authentication-service:
+    build: ./authentication-service
+    container_name: authentication-service
+    ports:
+      - "3010:3010"
+    env_file:
+      - ./.env
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      MONGO_URI: ${MONGO_URI_AUTH}
+    depends_on:
+      - mongo
+    volumes:
+      - ./user-service:/user-service
+    networks:
+      - microservices
+
+  # Charity Service
+  charity-service:
+    build: ./charity-service
+    container_name: charity-service
+    ports:
+      - "${CHARITY_PORT}:${CHARITY_PORT}"
+    env_file:
+      - ./.env
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      MONGO_URI: ${MONGO_URI_CHARITY}
+    depends_on:
+      - mongo
+    volumes:
+      - ./user-service:/user-service
+      - ./address-service:/address-service
+      - ../kafka:/kafka
+    networks:
+      - microservices
+
+  # Donor Service
+  donor-service:
+    build: ./donor-service
+    container_name: donor-service
+    ports:
+      - "${DONOR_PORT}:${DONOR_PORT}"
+    env_file:
+      - ./.env
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      MONGO_URI: ${MONGO_URI_DONOR}
+    depends_on:
+      - mongo
+    volumes:
+      - ./user-service:/user-service
+      - ./address-service:/address-service
+      - ../kafka:/kafka
+    networks:
+      - microservices
+
+  # Admin Service
+  admin-service:
+    build: ./admin-service
+    container_name: admin-service
+    ports:
+      - "${ADMIN_PORT}:${ADMIN_PORT}"
+    env_file:
+      - ./.env
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      MONGO_URI: ${MONGO_URI_AUTH}
+    depends_on:
+      - mongo
+    volumes:
+      - ./user-service:/user-service
+      - ../kafka:/kafka
+    networks:
+      - microservices
+
+  # User Service
+  user-service:
+    build: ./user-service
+    container_name: user-service
+    ports:
+      - "${USER_PORT}:${USER_PORT}"
+    env_file:
+      - ./.env
+    environment:
+      KAFKA_BROKER: ${KAFKA_BROKER}
+      MONGO_URI: ${MONGO_URI_AUTH}
+    depends_on:
+      - mongo
+    volumes:
+      - ../kafka:/kafka
+    networks:
+      - microservices
+
+volumes:
+  mongo-data:
+
+
+networks:
+  microservices:
+    external: true

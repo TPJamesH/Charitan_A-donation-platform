@@ -1,0 +1,16 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global styles */
+body {
+  @apply font-sans bg-gray-50 text-gray-900;
+  margin: 0;
+  padding: 0;
+}
+
+@layer utilities {
+    input:focus {
+      @apply outline-none ring-2 ring-primary;
+    }
+  }
